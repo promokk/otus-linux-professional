@@ -26,8 +26,8 @@ sudo reboot
 ~~~
 
 Скриншоты результата:  
-![01 - картинка](https://raw.githubusercontent.com/promokk/otus-linux-professional/homework-01/01.png)  
-![02 - картинка](https://raw.githubusercontent.com/promokk/otus-linux-professional/homework-01/02.png)  
-![03 - картинка](https://raw.githubusercontent.com/promokk/otus-linux-professional/homework-01/03.png)  
-![04 - картинка](https://raw.githubusercontent.com/promokk/otus-linux-professional/homework-01/04.png)  
-![05 - картинка](https://raw.githubusercontent.com/promokk/otus-linux-professional/homework-01/05.png)
+![01 - картинка](https://raw.githubusercontent.com/promokk/otus-linux-professional/main/homework-01/data/01.png)  
+![02 - картинка](https://raw.githubusercontent.com/promokk/otus-linux-professional/main/homework-01/data/02.png)  
+![03 - картинка](https://raw.githubusercontent.com/promokk/otus-linux-professional/main/homework-01/data/03.png)  
+![04 - картинка](https://raw.githubusercontent.com/promokk/otus-linux-professional/main/homework-01/data/04.png)  
+![05 - картинка](https://raw.githubusercontent.com/promokk/otus-linux-professional/main/homework-01/data/05.png)
