@@ -1,0 +1,113 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  # Ubuntu Jammy
+  config.vm.define "ubuntu-jammy" do |srv|
+    srv.vm.box = "ubuntu/jammy64"
+    
+    srv.vm.provider "virtualbox" do |vb|
+      vb.memory = 2048
+      vb.cpus = 2
+      vb.name = "ubuntu-hw-13"
+      vb.customize ['modifyvm', :id, '--audio', 'none']
+    end
+
+    # Синхронизация папок
+    srv.vm.synced_folder "./", "/vagrant"
+
+    # Подключение дисков
+    srv.vm.disk :disk, size: "1GB", name: "disk1"
+	srv.vm.disk :disk, size: "1GB", name: "disk2"
+
+    # Проброс порта для HTTP (будет доступен по localhost:8080)
+    srv.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1"
+					
+    # Provisioning
+    srv.vm.provision "shell", inline: <<-SHELL
+      # Обновляем список пакетов
+      apt-get update
+      
+      # Устанавливаем необходимые утилиты
+      apt-get install -y parted e2fsprogs
+      
+      # Определяем диски (исключаем системный диск)
+      # Обычно /dev/sda - системный, /dev/sdb и /dev/sdc - добавленные диски
+      DISK1=""
+      DISK2=""
+      
+      # Находим неразмеченные диски
+      for disk in /dev/sd[b-z] /dev/vd[b-z]; do
+        if [ -e "$disk" ] && [ ! -e "${disk}1" ] && [ ! -e "${disk}2" ]; then
+          if [ -z "$DISK1" ]; then
+            DISK1=$disk
+          elif [ -z "$DISK2" ]; then
+            DISK2=$disk
+            break
+          fi
+        fi
+      done
+      
+      # Если диски не найдены по первому методу, используем стандартные имена
+      if [ -z "$DISK1" ] && [ -e "/dev/sdb" ]; then
+        DISK1="/dev/sdb"
+      fi
+      if [ -z "$DISK2" ] && [ -e "/dev/sdc" ]; then
+        DISK2="/dev/sdc"
+      fi
+      
+      echo "Найденные диски:"
+      echo "Диск 1: $DISK1"
+      echo "Диск 2: $DISK2"
+      
+      # Функция для форматирования и монтирования диска
+      setup_disk() {
+        local DISK=$1
+        local MOUNT_POINT=$2
+        
+        if [ -z "$DISK" ]; then
+          echo "Диск не найден для $MOUNT_POINT"
+          return 1
+        fi
+        
+        echo "Настройка диска $DISK для $MOUNT_POINT"
+        
+        # Создаем точку монтирования
+        mkdir -p $MOUNT_POINT
+        
+        # Форматируем диск в ext4
+        echo "Форматирование $DISK в ext4..."
+        mkfs.ext4 -F $DISK
+        
+        # Монтируем диск
+        echo "Монтирование $DISK в $MOUNT_POINT..."
+        mount $DISK $MOUNT_POINT
+        
+        # Получаем UUID диска для fstab
+        UUID=$(blkid -s UUID -o value $DISK)
+        
+        # Добавляем запись в fstab
+        echo "Добавление записи в /etc/fstab для $DISK..."
+        echo "UUID=$UUID $MOUNT_POINT ext4 defaults 0 2" >> /etc/fstab
+        
+        echo "Диск $DISK успешно настроен и примонтирован в $MOUNT_POINT"
+      }
+      
+      # Настраиваем диски
+      setup_disk "$DISK1" "/mnt/disk1"
+      setup_disk "$DISK2" "/mnt/disk2"
+      
+      # Проверяем результат
+      echo ""
+      echo "Проверка монтирования:"
+      df -h | grep -E "(disk1|disk2)"
+      
+      echo ""
+      echo "Проверка записей в fstab:"
+      grep -E "(disk1|disk2)" /etc/fstab
+      
+      echo ""
+      echo "Настройка завершена успешно!"
+    SHELL
+  end
+end
