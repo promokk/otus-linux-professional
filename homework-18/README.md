@@ -78,6 +78,7 @@ Environment=BACKUP_TARGET=/etc
 # Создание бэкапа
 ExecStart=/bin/borg create \
     --stats                \
+    --info                \
     ${REPO}::etc-{now:%%Y-%%m-%%d_%%H:%%M:%%S} ${BACKUP_TARGET}
 
 # Проверка бэкапа
