@@ -61,48 +61,8 @@ borg extract \
 
 // Автоматизировать создание бэкапов с помощью systemd
 nano /etc/systemd/system/borg-backup.service
-"""
-[Unit]
-Description=Borg Backup
-
-[Service]
-Type=oneshot
-
-# Парольная фраза
-Environment="BORG_PASSPHRASE=123456"
-# Репозиторий
-Environment=REPO=borg@192.168.1.104:/var/backup/
-# Что бэкапим
-Environment=BACKUP_TARGET=/etc
-
-# Создание бэкапа
-ExecStart=/bin/borg create \
-    --stats                \
-    --info                \
-    ${REPO}::etc-{now:%%Y-%%m-%%d_%%H:%%M:%%S} ${BACKUP_TARGET}
-
-# Проверка бэкапа
-ExecStart=/bin/borg check ${REPO}
-
-# Очистка старых бэкапов
-ExecStart=/bin/borg prune \
-    --keep-daily  90      \
-    --keep-monthly 12     \
-    --keep-yearly  1       \
-    ${REPO}
-"""
 
 nano /etc/systemd/system/borg-backup.timer
-"""
-[Unit]
-Description=Borg Backup
-
-[Timer]
-OnUnitActiveSec=5min
-
-[Install]
-WantedBy=timers.target
-"""
 
 // Включить и запустить службу таймера
 systemctl enable borg-backup.timer 
@@ -113,7 +73,6 @@ systemctl list-timers --all
 ~~~
 
 Скриншоты результата:  
-![01 - картинка](https://raw.githubusercontent.com/promokk/otus-linux-professional/main/homework-18/data/01.png)
-![02 - картинка](https://raw.githubusercontent.com/promokk/otus-linux-professional/main/homework-18/data/02.png)
+![01 - картинка](https://raw.githubusercontent.com/promokk/otus-linux-professional/main/homework-18/data/01.png)  
+![02 - картинка](https://raw.githubusercontent.com/promokk/otus-linux-professional/main/homework-18/data/02.png)  
 ![03 - картинка](https://raw.githubusercontent.com/promokk/otus-linux-professional/main/homework-18/data/03.png)
-
