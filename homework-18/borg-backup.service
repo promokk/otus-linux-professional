@@ -1,0 +1,21 @@
+[Unit]
+Description=Borg Backup
+
+[Service]
+Type=oneshot
+
+# Парольная фраза
+Environment="BORG_PASSPHRASE=123456"
+# Репозиторий
+Environment=REPO=borg@192.168.1.104:/var/backup/
+# Что бэкапим
+Environment=BACKUP_TARGET=/etc
+
+# Создание бэкапа
+ExecStart=/bin/sh -c '/bin/borg create --stats --info ${REPO}::etc-{now:%%Y-%%m-%%d_%%H:%%M:%%S} ${BACKUP_TARGET} 2>&1 | logger -t borg-backup'
+
+# Проверка бэкапа
+ExecStart=/bin/sh -c '/bin/borg check ${REPO} 2>&1 | logger -t borg-backup'
+
+# Очистка старых бэкапов
+ExecStart=/bin/sh -c '/bin/borg prune --keep-daily 90 --keep-monthly 12 --keep-yearly 1 ${REPO} 2>&1 | logger -t borg-backup'
